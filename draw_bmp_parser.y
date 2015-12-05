@@ -18,9 +18,9 @@ class DrawShapeParser
     declare:  WORD 'as' shape { @shapes[val[0]] = val[2] }
             | WORD 'at' point { @points[val[0]] = val[2] }
 
-    pen:      'pen' rgb { @color = val[1] }
+    pen:      'pen' color { @color = val[1] }
 
-    rgb:      hex hex hex { result = val[2] + val[1] + val[0] }
+    color:    hex hex hex { result = val[2] + val[1] + val[0] }
 
     hex:      number { result = "%02x" % val[0] }
 
@@ -40,10 +40,12 @@ require "./shapes.rb"
 require "./bmp/writer.rb"
 
 ---- inner
-  def parse str 
+  def parse str
+    # Hash table for variables.
     @shapes = Hash.new
     @points = Hash.new
     @color = 'ffffff'
+    # Set up lexer.
     @lexer = make_lexer str
     do_parse
   end
