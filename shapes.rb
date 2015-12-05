@@ -13,8 +13,8 @@ class Circle
     @radius = radius
   end
 
-  def draw bmp, point
-    color = "%06x" % (rand * 0xffffff)
+  def draw bmp, color, point
+    # color = "%06x" % (rand * 0xffffff)
     l = (@radius * Math.cos(Math::PI / 4)).to_i
     for x in 0..l
       y = Math.sqrt(@radius * @radius - x * x).to_i
@@ -37,8 +37,8 @@ class Rectangle
     @height = height
   end
 
-  def draw bmp, point
-    color = "%06x" % (rand * 0xffffff)
+  def draw bmp, color, point
+    # color = "%06x" % (rand * 0xffffff)
     bmp[point.x, point.y] = color
     bmp[point.x + @width - 1, point.y] = color
     bmp[point.x, point.y + @height - 1] = color

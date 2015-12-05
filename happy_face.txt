@@ -1,11 +1,14 @@
 canvas 300 300
+pen 255 255 0
 center at 150 150
 draw circle 120 center
 eye as rectangle 10 70
+pen 255 255 255
 draw eye 85 90 draw eye 215 90
 mouth_1 as rectangle 60 10
 mouth_2 as rectangle 30 10
 mouth_3 as rectangle 10 10
+pen 255 0 0
 draw mouth_1 120 225
 draw mouth_2 90 215
 draw mouth_2 180 215

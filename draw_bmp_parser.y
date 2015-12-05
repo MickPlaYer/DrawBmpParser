@@ -11,11 +11,18 @@ class DrawShapeParser
 
     method:   draw
             | declare
+            | pen
 
-    draw:     'draw' shape point { val[1].draw @bitmap, val[2] }
+    draw:     'draw' shape point { val[1].draw @bitmap, @color, val[2] }
 
     declare:  WORD 'as' shape { @shapes[val[0]] = val[2] }
             | WORD 'at' point { @points[val[0]] = val[2] }
+
+    pen:      'pen' rgb { @color = val[1] }
+
+    rgb:      hex hex hex { result = val[2] + val[1] + val[0] }
+
+    hex:      number { result = "%02x" % val[0] }
 
     shape:    'circle' number { result = Circle.new val[1] }
             | 'rectangle' number number { result = Rectangle.new val[1], val[2] }
@@ -36,6 +43,7 @@ require "./bmp/writer.rb"
   def parse str 
     @shapes = Hash.new
     @points = Hash.new
+    @color = 'ffffff'
     @lexer = make_lexer str
     do_parse
   end
@@ -45,7 +53,7 @@ require "./bmp/writer.rb"
   end
 
   def make_lexer str
-    keywords = ['canvas' , 'draw', 'circle', 'rectangle', 'as', 'at']
+    keywords = ['canvas', 'pen', 'draw', 'circle', 'rectangle', 'as', 'at']
     lexer = Lexer.new
     lexer.add_ignore(/\s+/)
     keywords.each do |kw|
