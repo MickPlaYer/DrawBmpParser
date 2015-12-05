@@ -1,16 +1,28 @@
 canvas 300 300
-pen 255 255 0
-center at 150 150
-draw circle 120 center
+color 255 255 255
+
+point at 30 30
+
+pen 164 164 0
+draw circle 120 at point
+
 eye as rectangle 10 70
-pen 255 255 255
-draw eye 85 90 draw eye 215 90
-mouth_1 as rectangle 60 10
-mouth_2 as rectangle 30 10
-mouth_3 as rectangle 10 10
-pen 255 0 0
-draw mouth_1 120 225
-draw mouth_2 90 215
-draw mouth_2 180 215
-draw mouth_3 80 205
-draw mouth_3 210 205
+
+pen 0 0 0
+draw eye at 85 90
+draw eye at 205 90
+
+mouth as rectangle 10 10
+  add rectangle 30 10 shift 10 10
+  add rectangle 60 10 shift 40 20
+  add rectangle 30 10 shift 100 10
+  add rectangle 10 10 shift 130 0
+
+nose as circle 10
+nose_from_mouse at 60 -30
+
+pen 0 164 0
+draw
+  mouth add nose 
+  shift nose_from_mouse
+at 80 200

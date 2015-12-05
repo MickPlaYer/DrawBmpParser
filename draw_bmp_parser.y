@@ -1,10 +1,10 @@
 
-class DrawShapeParser
+class DrawBmpParser
   rule
     start:    canvas methods
 
-    canvas:   'canvas' number number
-                { @bitmap = BMP::Writer.new val[1], val[2] }
+    canvas:   'canvas' number number 'color' color
+              { set_canvas val[1], val[2], val[4] }
 
     methods:  method
             | method methods
@@ -13,31 +13,37 @@ class DrawShapeParser
             | declare
             | pen
 
-    draw:     'draw' shape point { val[1].draw @bitmap, @color, val[2] }
+    draw:     'draw' shape 'at' point 
+              { draw_shapes val[1], @bitmap, @color, val[3] }
 
-    declare:  WORD 'as' shape { @shapes[val[0]] = val[2] }
-            | WORD 'at' point { @points[val[0]] = val[2] }
+    declare:  NAME 'as' shape { @shapes[val[0]] = val[2] }
+            | NAME 'at' point { @points[val[0]] = val[2] }
 
     pen:      'pen' color { @color = val[1] }
 
-    color:    hex hex hex { result = val[2] + val[1] + val[0] }
-
-    hex:      number { result = "%02x" % val[0] }
-
-    shape:    'circle' number { result = Circle.new val[1] }
-            | 'rectangle' number number { result = Rectangle.new val[1], val[2] }
-            | WORD { result = @shapes[val[0]] }
-
+    shape:    shape 'add' shape 'shift' point 
+              { result = add_shapes val[0], val[2], val[4] }
+            | 'circle' number 
+              { result = Circle.new val[1] }
+            | 'rectangle' number number 
+              { result = Rectangle.new val[1], val[2] }
+            | NAME { result = find_shape val[0] }
+            
     point:    number number { result = Point.new val[0], val[1] }
-            | WORD { result = @points[val[0]] }
+            | NAME { result = find_point val[0] }
 
     number:   NUMBER { result = val[0].to_i }
+            | NEGATIVE NUMBER { result = -(val[1].to_i) }
+
+    color:    hex hex hex { result = val[2] + val[1] + val[0] }
+
+    hex:      number { result = get_color_hex val[0] }
 end
 
 ---- header
 require "./lexer.rb"
 require "./shapes.rb"
-require "./bmp/writer.rb"
+require "./bmp_writer.rb"
 
 ---- inner
   def parse str
@@ -55,14 +61,15 @@ require "./bmp/writer.rb"
   end
 
   def make_lexer str
-    keywords = ['canvas', 'pen', 'draw', 'circle', 'rectangle', 'as', 'at']
+    keywords = ['canvas', 'color', 'pen', 'draw', 'circle', 'rectangle', 'add', 'shift', 'as', 'at']
     lexer = Lexer.new
     lexer.add_ignore(/\s+/)
     keywords.each do |kw|
       lexer.add_keyword kw
     end
+    lexer.add_token(/-/, :NEGATIVE)
     lexer.add_token(/\d+/, :NUMBER)
-    lexer.add_token(/\w+/, :WORD)
+    lexer.add_token(/\w+/, :NAME)
     lexer.start str
     return lexer
   end
@@ -71,9 +78,36 @@ require "./bmp/writer.rb"
     @bitmap.save_as(name + '.bmp')
   end
 
+  private
+
+  def set_canvas width, height, color
+    err_msg = "\tSet canvas fail!\n\tCanvas size can't under 0!"
+    raise err_msg if width < 0 || height < 0
+    @bitmap = BMP::Writer.new  width, height, color
+  end
+
+  def get_color_hex number
+    err_msg = "\tIllegal RGB number!\n\tRGB number must between 0 to 255."
+    raise err_msg if number > 255 || number < 0
+    return "%02x" % number
+  end
+
+  def find_shape name
+    shape = @shapes[name]
+    raise "\tCan't find shape with name: " + name if shape.nil?
+    return shape
+  end
+
+  def find_point name
+    point = @points[name]
+    raise "\tCan't find point with name: " + name if point.nil?
+    return point
+  end
+
 ---- footer
+# Run under code if execute by cmd > Ruby "this file"
 if $0 == __FILE__
-  parser = DrawShapeParser.new
+  parser = DrawBmpParser.new
   # Get data for parse from file.
   file_path = ARGV[0] || "example.txt"
   file = File.open(file_path, "rb")
@@ -86,10 +120,12 @@ if $0 == __FILE__
   # Do parse.
   begin
     parser.parse(contents)
-  rescue ParseError
+    puts 'Saving bitmap...'
+    parser.save_bmp File.basename(file_path, ".*")
+    puts 'End!'
+  rescue
+    puts 'Error'
     puts $!
+    puts 'Parse fail!'
   end
-  puts 'Saving bitmap...'
-  parser.save_bmp File.basename(file_path, ".*")
-  puts 'End!'
 end

@@ -8,9 +8,9 @@ class BMP
     DIB_HEADER_SIZE = 40
     PIXELS_PER_METER = 2835 # 2835 pixels per meter is basically 72dpi
 
-    def initialize(width, height)
+    def initialize(width, height, color)
       @width, @height = width, height
-      @pixels = Array.new(@height) { Array.new(@width) { "000000" } }
+      @pixels = Array.new(@height) { Array.new(@width) { color } }
     end
 
     def []=(x,y,value)

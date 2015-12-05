@@ -8,15 +8,17 @@ require 'racc/parser.rb'
 
 require "./lexer.rb"
 require "./shapes.rb"
-require "./bmp/writer.rb"
+require "./bmp_writer.rb"
 
-class DrawShapeParser < Racc::Parser
+class DrawBmpParser < Racc::Parser
 
-module_eval(<<'...end draw_bmp_parser.y/module_eval...', 'draw_bmp_parser.y', 43)
-  def parse str 
+module_eval(<<'...end draw_bmp_parser.y/module_eval...', 'draw_bmp_parser.y', 49)
+  def parse str
+    # Hash table for variables.
     @shapes = Hash.new
     @points = Hash.new
     @color = 'ffffff'
+    # Set up lexer.
     @lexer = make_lexer str
     do_parse
   end
@@ -26,14 +28,15 @@ module_eval(<<'...end draw_bmp_parser.y/module_eval...', 'draw_bmp_parser.y', 43
   end
 
   def make_lexer str
-    keywords = ['canvas', 'pen', 'draw', 'circle', 'rectangle', 'as', 'at']
+    keywords = ['canvas', 'color', 'pen', 'draw', 'circle', 'rectangle', 'add', 'shift', 'as', 'at']
     lexer = Lexer.new
     lexer.add_ignore(/\s+/)
     keywords.each do |kw|
       lexer.add_keyword kw
     end
+    lexer.add_token(/-/, :NEGATIVE)
     lexer.add_token(/\d+/, :NUMBER)
-    lexer.add_token(/\w+/, :WORD)
+    lexer.add_token(/\w+/, :NAME)
     lexer.start str
     return lexer
   end
@@ -42,89 +45,133 @@ module_eval(<<'...end draw_bmp_parser.y/module_eval...', 'draw_bmp_parser.y', 43
     @bitmap.save_as(name + '.bmp')
   end
 
+  private
+
+  def set_canvas width, height, color
+    err_msg = "\tSet canvas fail!\n\tCanvas size can't under 0!"
+    raise err_msg if width < 0 || height < 0
+    @bitmap = BMP::Writer.new  width, height, color
+  end
+
+  def get_color_hex number
+    err_msg = "\tIllegal RGB number!\n\tRGB number must between 0 to 255."
+    raise err_msg if number > 255 || number < 0
+    return "%02x" % number
+  end
+
+  def find_shape name
+    shape = @shapes[name]
+    raise "\tCan't find shape with name: " + name if shape.nil?
+    return shape
+  end
+
+  def find_point name
+    point = @points[name]
+    raise "\tCan't find point with name: " + name if point.nil?
+    return point
+  end
+
 ...end draw_bmp_parser.y/module_eval...
 ##### State transition tables begin ###
 
 racc_action_table = [
-    29,    29,    21,    22,    20,    14,    14,    14,    18,    19,
-    20,    14,    10,    11,    18,    19,    12,    10,    11,    15,
-    14,    12,    14,    14,     3,     4,    14,    14,    14,    14 ]
+    36,    10,    36,    11,    36,    12,    30,    14,    15,    14,
+    15,    14,    15,    21,    23,    21,    22,    21,    19,    20,
+    19,    20,    19,    20,    29,    10,    38,    11,    30,    12,
+    14,    15,    14,    15,    14,    15,    14,    15,    14,    15,
+    14,    15,    14,    15,    14,    15,    30,    45,    14,    15,
+    14,    15,    28,    16,     4,     3 ]
 
 racc_action_check = [
-    17,    22,    11,    11,    21,    13,    17,    22,    21,    21,
-    10,    12,     2,     2,    10,    10,     2,     6,     6,     4,
-     3,     6,    18,    19,     0,     1,    24,    28,    31,    34 ]
+    45,     6,    29,     6,    23,     6,    33,    45,    45,    29,
+    29,    23,    23,    22,    11,    10,    11,    30,    22,    22,
+    10,    10,    30,    30,    18,     2,    27,     2,    18,     2,
+    32,    32,    13,    13,    19,    19,    38,    38,     3,     3,
+    12,    12,    25,    25,    35,    35,    40,    40,    37,    37,
+    20,    20,    15,     4,     1,     0 ]
 
 racc_action_pointer = [
-    22,    25,     9,    10,    19,   nil,    14,   nil,   nil,   nil,
-     6,    -3,     1,    -5,   nil,   nil,   nil,    -4,    12,    13,
-   nil,     0,    -3,   nil,    16,   nil,   nil,   nil,    17,   nil,
-   nil,    18,   nil,   nil,    19,   nil,   nil,   nil ]
+    53,    54,    21,    25,    53,   nil,    -3,   nil,   nil,   nil,
+     9,     9,    27,    19,   nil,    39,   nil,   nil,    19,    21,
+    37,   nil,     7,    -2,   nil,    29,   nil,    23,   nil,    -4,
+    11,   nil,    17,    -3,   nil,    31,   nil,    35,    23,   nil,
+    37,   nil,   nil,   nil,   nil,    -6,   nil ]
 
 racc_action_default = [
-   -20,   -20,   -20,   -20,   -20,    -1,    -3,    -5,    -6,    -7,
-   -20,   -20,   -20,   -20,   -19,    38,    -4,   -20,   -20,   -20,
-   -16,   -20,   -20,   -11,   -20,   -13,    -2,    -8,   -20,   -18,
-   -14,   -20,    -9,   -10,   -20,   -17,   -15,   -12 ]
+   -22,   -22,   -22,   -22,   -22,    -1,    -3,    -5,    -6,    -7,
+   -22,   -22,   -22,   -22,   -18,   -22,    47,    -4,   -22,   -22,
+   -22,   -15,   -22,   -22,   -11,   -22,   -21,   -22,   -19,   -22,
+   -22,   -13,   -22,    -9,   -10,   -22,   -17,   -22,   -22,    -8,
+   -22,   -14,   -16,   -20,    -2,   -22,   -12 ]
 
 racc_goto_table = [
-    13,    24,    27,     2,     5,    23,    17,    33,    16,     1,
-    26,   nil,   nil,    34,    28,    30,    31,    32,   nil,    28,
-   nil,   nil,   nil,    37,   nil,    35,   nil,   nil,    36 ]
+    13,    24,    34,    18,     2,     5,    37,     1,    39,    17,
+    27,   nil,   nil,   nil,   nil,    33,    31,    32,    43,   nil,
+    35,   nil,   nil,    40,    46,   nil,    35,    44,   nil,    41,
+   nil,   nil,    42,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,    35 ]
 
 racc_goto_check = [
-     4,    12,    10,     2,     3,    11,     9,    10,     3,     1,
-     4,   nil,   nil,    12,     4,     4,     4,     9,   nil,     4,
-   nil,   nil,   nil,    12,   nil,     4,   nil,   nil,     4 ]
+     4,     5,    11,    10,     2,     3,    12,     1,    11,     3,
+     4,   nil,   nil,   nil,   nil,    10,     4,     4,    12,   nil,
+     4,   nil,   nil,    10,    11,   nil,     4,     5,   nil,     4,
+   nil,   nil,     4,   nil,   nil,   nil,   nil,   nil,   nil,   nil,
+   nil,   nil,     4 ]
 
 racc_goto_pointer = [
-   nil,     9,     3,     2,    -3,   nil,   nil,   nil,   nil,    -4,
-   -15,    -7,   -11 ]
+   nil,     7,     4,     3,    -3,   -11,   nil,   nil,   nil,   nil,
+    -7,   -21,   -19 ]
 
 racc_goto_default = [
-   nil,   nil,   nil,   nil,    25,     6,     7,     8,     9,   nil,
-   nil,   nil,   nil ]
+   nil,   nil,   nil,   nil,    26,   nil,     6,     7,     8,     9,
+   nil,   nil,    25 ]
 
 racc_reduce_table = [
   0, 0, :racc_error,
-  2, 12, :_reduce_none,
-  3, 13, :_reduce_2,
-  1, 14, :_reduce_none,
-  2, 14, :_reduce_none,
-  1, 16, :_reduce_none,
-  1, 16, :_reduce_none,
-  1, 16, :_reduce_none,
-  3, 17, :_reduce_8,
-  3, 18, :_reduce_9,
-  3, 18, :_reduce_10,
-  2, 19, :_reduce_11,
-  3, 22, :_reduce_12,
-  1, 23, :_reduce_13,
-  2, 20, :_reduce_14,
-  3, 20, :_reduce_15,
-  1, 20, :_reduce_16,
-  2, 21, :_reduce_17,
-  1, 21, :_reduce_18,
-  1, 15, :_reduce_19 ]
+  2, 16, :_reduce_none,
+  5, 17, :_reduce_2,
+  1, 18, :_reduce_none,
+  2, 18, :_reduce_none,
+  1, 21, :_reduce_none,
+  1, 21, :_reduce_none,
+  1, 21, :_reduce_none,
+  4, 22, :_reduce_8,
+  3, 23, :_reduce_9,
+  3, 23, :_reduce_10,
+  2, 24, :_reduce_11,
+  5, 25, :_reduce_12,
+  2, 25, :_reduce_13,
+  3, 25, :_reduce_14,
+  1, 25, :_reduce_15,
+  2, 26, :_reduce_16,
+  1, 26, :_reduce_17,
+  1, 19, :_reduce_18,
+  2, 19, :_reduce_19,
+  3, 20, :_reduce_20,
+  1, 27, :_reduce_21 ]
 
-racc_reduce_n = 20
+racc_reduce_n = 22
 
-racc_shift_n = 38
+racc_shift_n = 47
 
 racc_token_table = {
   false => 0,
   :error => 1,
   "canvas" => 2,
-  "draw" => 3,
-  :WORD => 4,
-  "as" => 5,
-  "at" => 6,
-  "pen" => 7,
-  "circle" => 8,
-  "rectangle" => 9,
-  :NUMBER => 10 }
+  "color" => 3,
+  "draw" => 4,
+  "at" => 5,
+  :NAME => 6,
+  "as" => 7,
+  "pen" => 8,
+  "add" => 9,
+  "shift" => 10,
+  "circle" => 11,
+  "rectangle" => 12,
+  :NUMBER => 13,
+  :NEGATIVE => 14 }
 
-racc_nt_base = 11
+racc_nt_base = 15
 
 racc_use_result_var = true
 
@@ -148,26 +195,30 @@ Racc_token_to_s_table = [
   "$end",
   "error",
   "\"canvas\"",
+  "\"color\"",
   "\"draw\"",
-  "WORD",
-  "\"as\"",
   "\"at\"",
+  "NAME",
+  "\"as\"",
   "\"pen\"",
+  "\"add\"",
+  "\"shift\"",
   "\"circle\"",
   "\"rectangle\"",
   "NUMBER",
+  "NEGATIVE",
   "$start",
   "start",
   "canvas",
   "methods",
   "number",
+  "color",
   "method",
   "draw",
   "declare",
   "pen",
   "shape",
   "point",
-  "rgb",
   "hex" ]
 
 Racc_debug_parser = false
@@ -180,7 +231,7 @@ Racc_debug_parser = false
 
 module_eval(<<'.,.,', 'draw_bmp_parser.y', 6)
   def _reduce_2(val, _values, result)
-     @bitmap = BMP::Writer.new val[1], val[2] 
+     set_canvas val[1], val[2], val[4] 
     result
   end
 .,.,
@@ -195,86 +246,100 @@ module_eval(<<'.,.,', 'draw_bmp_parser.y', 6)
 
 # reduce 7 omitted
 
-module_eval(<<'.,.,', 'draw_bmp_parser.y', 15)
+module_eval(<<'.,.,', 'draw_bmp_parser.y', 16)
   def _reduce_8(val, _values, result)
-     val[1].draw @bitmap, @color, val[2] 
+     draw_shapes val[1], @bitmap, @color, val[3] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'draw_bmp_parser.y', 17)
+module_eval(<<'.,.,', 'draw_bmp_parser.y', 18)
   def _reduce_9(val, _values, result)
      @shapes[val[0]] = val[2] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'draw_bmp_parser.y', 18)
+module_eval(<<'.,.,', 'draw_bmp_parser.y', 19)
   def _reduce_10(val, _values, result)
      @points[val[0]] = val[2] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'draw_bmp_parser.y', 20)
+module_eval(<<'.,.,', 'draw_bmp_parser.y', 21)
   def _reduce_11(val, _values, result)
      @color = val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'draw_bmp_parser.y', 22)
-  def _reduce_12(val, _values, result)
-     result = val[2] + val[1] + val[0] 
-    result
-  end
-.,.,
-
 module_eval(<<'.,.,', 'draw_bmp_parser.y', 24)
-  def _reduce_13(val, _values, result)
-     result = "%02x" % val[0] 
+  def _reduce_12(val, _values, result)
+     result = add_shapes val[0], val[2], val[4] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'draw_bmp_parser.y', 26)
-  def _reduce_14(val, _values, result)
+  def _reduce_13(val, _values, result)
      result = Circle.new val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'draw_bmp_parser.y', 27)
-  def _reduce_15(val, _values, result)
+module_eval(<<'.,.,', 'draw_bmp_parser.y', 28)
+  def _reduce_14(val, _values, result)
      result = Rectangle.new val[1], val[2] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'draw_bmp_parser.y', 28)
-  def _reduce_16(val, _values, result)
-     result = @shapes[val[0]] 
-    result
-  end
-.,.,
-
-module_eval(<<'.,.,', 'draw_bmp_parser.y', 30)
-  def _reduce_17(val, _values, result)
-     result = Point.new val[0], val[1] 
+module_eval(<<'.,.,', 'draw_bmp_parser.y', 29)
+  def _reduce_15(val, _values, result)
+     result = find_shape val[0] 
     result
   end
 .,.,
 
 module_eval(<<'.,.,', 'draw_bmp_parser.y', 31)
-  def _reduce_18(val, _values, result)
-     result = @points[val[0]] 
+  def _reduce_16(val, _values, result)
+     result = Point.new val[0], val[1] 
     result
   end
 .,.,
 
-module_eval(<<'.,.,', 'draw_bmp_parser.y', 33)
-  def _reduce_19(val, _values, result)
+module_eval(<<'.,.,', 'draw_bmp_parser.y', 32)
+  def _reduce_17(val, _values, result)
+     result = find_point val[0] 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'draw_bmp_parser.y', 34)
+  def _reduce_18(val, _values, result)
      result = val[0].to_i 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'draw_bmp_parser.y', 35)
+  def _reduce_19(val, _values, result)
+     result = -(val[1].to_i) 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'draw_bmp_parser.y', 37)
+  def _reduce_20(val, _values, result)
+     result = val[2] + val[1] + val[0] 
+    result
+  end
+.,.,
+
+module_eval(<<'.,.,', 'draw_bmp_parser.y', 39)
+  def _reduce_21(val, _values, result)
+     result = get_color_hex val[0] 
     result
   end
 .,.,
@@ -283,10 +348,11 @@ def _reduce_none(val, _values, result)
   val[0]
 end
 
-end   # class DrawShapeParser
+end   # class DrawBmpParser
 
+# Run under code if execute by cmd > Ruby "this file"
 if $0 == __FILE__
-  parser = DrawShapeParser.new
+  parser = DrawBmpParser.new
   # Get data for parse from file.
   file_path = ARGV[0] || "example.txt"
   file = File.open(file_path, "rb")
@@ -299,10 +365,12 @@ if $0 == __FILE__
   # Do parse.
   begin
     parser.parse(contents)
-  rescue ParseError
+    puts 'Saving bitmap...'
+    parser.save_bmp File.basename(file_path, ".*")
+    puts 'End!'
+  rescue
+    puts 'Error'
     puts $!
+    puts 'Parse fail!'
   end
-  puts 'Saving bitmap...'
-  parser.save_bmp File.basename(file_path, ".*")
-  puts 'End!'
 end

@@ -1,8 +1,23 @@
-canvas 500 500
-draw circle 50 100 100
-draw circle 75 100 100
-draw circle 100 100 100
-s1 as rectangle 20 30
-draw s1 100 100
-p1 at 125 125
-draw s1 p1
+canvas 500 500 color 0 0 0
+
+draw circle 50 at 50 50
+draw circle 75 at 25 25
+draw circle 100 at 0 0
+
+pen 255 0 0
+draw circle 125 at 125 125
+
+pen 0 0 255
+draw rectangle 100 100 at 325 325
+
+s1 as rectangle 250 250
+pen 255 255 0
+draw s1 at 250 0
+
+p1 at 0 250
+pen 0 255 255
+draw s1 at p1
+
+s2 as circle 10 add circle 20 shift 5 5
+pen 255 0 255
+draw s2 at 300 300

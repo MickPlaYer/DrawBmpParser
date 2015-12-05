@@ -1,0 +1,37 @@
+Draw Bmp Text 繪圖語言
+
+1. Header
+>> canvas [width] [height] color [R] [G] [B]
+	必定寫在檔案的開頭。
+	用來設定畫布的寬高以及畫布的背景顏色。
+
+2. Methods 
+	接在Header之後，可任意加入。
+	a. Pen Color
+	>> pen [R] [G] [B]
+		設定畫筆的顏色，一直到下次設定顏色為止。
+		未設定前為白色(255 255 255)。
+	b. Draw
+	>> draw [shape] at [point]
+		將指定圖形繪製於指定點上。
+	c. Declare
+	>> [NAME] as [shape]
+	>> [NAME] as [point]
+		將指定圖形或點命名。
+
+3. Items 
+	無法單獨使用，須放置於其他語句裡面。
+	a. shape
+	>> circle [radius]
+		產生一個半徑為radius大小的圓。
+	>> rectangle [width] [height]
+		產生一個指定大小的矩形。
+	>> [NAME]
+		透過名稱取得已命名的圖形。
+	>> [shape] add [shape] shift [point]
+		將兩個圖形和成一個新圖形，後者會有一個位移量。
+	b. point
+	>> [x] [y]
+		產生一個位於(x, y)的點。
+	>> [NAME]
+		透過名稱取得已命名的點。
