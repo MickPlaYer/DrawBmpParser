@@ -27,7 +27,7 @@ class Circle
       bmp[point.x - y, point.y + x] = color
       bmp[point.x - y, point.y - x] = color
     end
-    puts 'You draw a circle(radius:' + @radius.to_s + ') at point(' + point.x.to_s + ', ' + point.y.to_s + ')'
+    puts 'Drawing a circle(radius:' + @radius.to_s + ') at point(' + point.x.to_s + ', ' + point.y.to_s + ')'
   end
 end
 
@@ -51,6 +51,6 @@ class Rectangle
       bmp[point.x, point.y + y] = color
       bmp[point.x + @width - 1, point.y + y] = color
     end
-    puts 'You draw a rectangle(width:' + @width.to_s + ' height:' + @height.to_s + ') at point(' + point.x.to_s + ', ' + point.y.to_s + ')'
+    puts 'Drawing a rectangle(width:' + @width.to_s + ' height:' + @height.to_s + ') at point(' + point.x.to_s + ', ' + point.y.to_s + ')'
   end
 end

@@ -13,12 +13,11 @@ require "./bmp/writer.rb"
 class DrawShapeParser < Racc::Parser
 
 module_eval(<<'...end draw_bmp_parser.y/module_eval...', 'draw_bmp_parser.y', 36)
-  def parse(str)
+  def parse str 
     @shapes = Hash.new
     @points = Hash.new
     @lexer = make_lexer str
     do_parse
-    @bitmap.save_as('example.bmp')
   end
 
   def next_token
@@ -36,6 +35,10 @@ module_eval(<<'...end draw_bmp_parser.y/module_eval...', 'draw_bmp_parser.y', 36
     lexer.add_token(/\w+/, :WORD)
     lexer.start str
     return lexer
+  end
+
+  def save_bmp name
+    @bitmap.save_as(name + '.bmp')
   end
 
 ...end draw_bmp_parser.y/module_eval...
@@ -249,17 +252,22 @@ end   # class DrawShapeParser
 
 if $0 == __FILE__
   parser = DrawShapeParser.new
+  # Get data for parse from file.
   file_path = ARGV[0] || "example.txt"
   file = File.open(file_path, "rb")
   contents = file.read
   file.close
+  # Show what to parse.
   puts "Parsing:\n" + contents.to_s
   puts
   puts 'Result:'
+  # Do parse.
   begin
     parser.parse(contents)
   rescue ParseError
     puts $!
   end
-  puts 'End:'
+  puts 'Saving bitmap...'
+  parser.save_bmp File.basename(file_path, ".*")
+  puts 'End!'
 end
