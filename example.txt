@@ -1,0 +1,8 @@
+canvas 500 500
+draw circle 50 100 100
+draw circle 75 100 100
+draw circle 300 100 100
+s1 as rectangle 20 30
+draw s1 3 4
+p1 at 7 23
+draw s1 p1
