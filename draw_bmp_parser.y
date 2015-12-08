@@ -66,7 +66,7 @@ require './lib/graphic/point.rb'
     keywords = 
     ['canvas', 'color', 'pen', 'draw',
      'circle', 'rectangle',
-     'add', 'shift', 'as', 'at', '#']
+     'add', 'shift', 'as', 'at']
     lexer = Lexer.new
 
     lexer.add_ignore(/\s+/)
