@@ -23,6 +23,6 @@ nose_from_mouse at 60 -30
 
 pen 0 164 0
 draw
-  mouth add nose 
+  mouth add nose
   shift nose_from_mouse
 at 80 200

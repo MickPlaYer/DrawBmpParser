@@ -1,4 +1,6 @@
-canvas 500 500 color 0 0 0
+canvas 500 500 color 1 2 3
+
+# This is command
 
 draw circle 50 at 50 50
 draw circle 75 at 25 25

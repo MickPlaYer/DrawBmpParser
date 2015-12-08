@@ -30,15 +30,23 @@ module_eval(<<'...end draw_bmp_parser.y/module_eval...', 'draw_bmp_parser.y', 51
   end
 
   def make_lexer str
-    keywords = ['canvas', 'color', 'pen', 'draw', 'circle', 'rectangle', 'add', 'shift', 'as', 'at']
+    keywords = 
+    ['canvas', 'color', 'pen', 'draw',
+     'circle', 'rectangle',
+     'add', 'shift', 'as', 'at', '#']
     lexer = Lexer.new
+
     lexer.add_ignore(/\s+/)
+    lexer.add_ignore(/#[^\n]+/)
+
     keywords.each do |kw|
       lexer.add_keyword kw
     end
+
     lexer.add_token(/-/, :NEGATIVE)
     lexer.add_token(/\d+/, :NUMBER)
     lexer.add_token(/\w+/, :NAME)
+
     lexer.start str
     return lexer
   end
@@ -387,8 +395,6 @@ if $0 == __FILE__
     parser.save_bmp File.basename(file_path, ".*")
     puts 'End!'
   rescue
-    puts 'Error'
     puts $!
-    puts 'Parse fail!'
   end
 end
