@@ -6,9 +6,9 @@
 
 require 'racc/parser.rb'
 
-require "./lexer.rb"
-require "./shapes.rb"
-require "./bmp_writer.rb"
+require "./lib/lexer.rb"
+require "./lib/graphic/shapes.rb"
+require "./lib/graphic/bmp_writer.rb"
 
 class DrawBmpParser < Racc::Parser
 
@@ -354,7 +354,7 @@ end   # class DrawBmpParser
 if $0 == __FILE__
   parser = DrawBmpParser.new
   # Get data for parse from file.
-  file_path = ARGV[0] || "example.txt"
+  file_path = ARGV[0] || "sample/example.txt"
   file = File.open(file_path, "rb")
   contents = file.read
   file.close

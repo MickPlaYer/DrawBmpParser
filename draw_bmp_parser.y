@@ -41,9 +41,11 @@ class DrawBmpParser
 end
 
 ---- header
-require "./lexer.rb"
-require "./shapes.rb"
-require "./bmp_writer.rb"
+require "./lib/lexer.rb"
+require "./lib/graphic/bmp_writer.rb"
+require './lib/graphic/circle.rb'
+require './lib/graphic/rectangle.rb'
+require './lib/graphic/point.rb'
 
 ---- inner
   def parse str
@@ -83,7 +85,7 @@ require "./bmp_writer.rb"
   def set_canvas width, height, color
     err_msg = "\tSet canvas fail!\n\tCanvas size can't under 0!"
     raise err_msg if width < 0 || height < 0
-    @bitmap = BMP::Writer.new  width, height, color
+    @bitmap = BMPWriter.new  width, height, color
   end
 
   def get_color_hex number
@@ -104,12 +106,28 @@ require "./bmp_writer.rb"
     return point
   end
 
+  def add_shapes shape1, shape2, point
+    shape1 = [shape1] unless shape1.kind_of?(Array)
+    shape2 = [shape2] unless shape2.kind_of?(Array)
+    shape2.each do |s|
+      s.position.add point
+    end
+    shape1 + shape2
+  end
+
+  def draw_shapes shapes, bmp, color, point
+    shapes = [shapes] unless shapes.kind_of?(Array)
+    shapes.each do |s|
+      s.draw bmp, color, point
+    end
+  end
+
 ---- footer
 # Run under code if execute by cmd > Ruby "this file"
 if $0 == __FILE__
   parser = DrawBmpParser.new
   # Get data for parse from file.
-  file_path = ARGV[0] || "example.txt"
+  file_path = ARGV[0] || "sample/example.txt"
   file = File.open(file_path, "rb")
   contents = file.read
   file.close
