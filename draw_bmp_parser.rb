@@ -7,12 +7,14 @@
 require 'racc/parser.rb'
 
 require "./lib/lexer.rb"
-require "./lib/graphic/shapes.rb"
 require "./lib/graphic/bmp_writer.rb"
+require './lib/graphic/circle.rb'
+require './lib/graphic/rectangle.rb'
+require './lib/graphic/point.rb'
 
 class DrawBmpParser < Racc::Parser
 
-module_eval(<<'...end draw_bmp_parser.y/module_eval...', 'draw_bmp_parser.y', 49)
+module_eval(<<'...end draw_bmp_parser.y/module_eval...', 'draw_bmp_parser.y', 51)
   def parse str
     # Hash table for variables.
     @shapes = Hash.new
@@ -50,7 +52,7 @@ module_eval(<<'...end draw_bmp_parser.y/module_eval...', 'draw_bmp_parser.y', 49
   def set_canvas width, height, color
     err_msg = "\tSet canvas fail!\n\tCanvas size can't under 0!"
     raise err_msg if width < 0 || height < 0
-    @bitmap = BMP::Writer.new  width, height, color
+    @bitmap = BMPWriter.new  width, height, color
   end
 
   def get_color_hex number
@@ -69,6 +71,22 @@ module_eval(<<'...end draw_bmp_parser.y/module_eval...', 'draw_bmp_parser.y', 49
     point = @points[name]
     raise "\tCan't find point with name: " + name if point.nil?
     return point
+  end
+
+  def add_shapes shape1, shape2, point
+    shape1 = [shape1] unless shape1.kind_of?(Array)
+    shape2 = [shape2] unless shape2.kind_of?(Array)
+    shape2.each do |s|
+      s.position.add point
+    end
+    shape1 + shape2
+  end
+
+  def draw_shapes shapes, bmp, color, point
+    shapes = [shapes] unless shapes.kind_of?(Array)
+    shapes.each do |s|
+      s.draw bmp, color, point
+    end
   end
 
 ...end draw_bmp_parser.y/module_eval...
